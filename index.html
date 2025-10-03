@@ -1,0 +1,135 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clave V — Decodificador</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0f0f12">
+<style>
+  :root{
+    --bg:#0f0f12; --card:#15161a; --muted:#98a2b3; --text:#e5e7eb; --accent:#66e3ff;
+    --border:#24262c;
+  }
+  *{box-sizing:border-box}
+  body{background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial,sans-serif;
+       max-width:980px;margin:28px auto;padding:0 16px;line-height:1.55}
+  header{display:flex;align-items:center;gap:14px;margin-bottom:10px}
+  .logo{width:40px;height:40px;display:inline-block}
+  h1{font-size:1.7rem;margin:0}
+  .muted{color:var(--muted)}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;margin:16px 0}
+  textarea{width:100%;min-height:120px;border:1px solid var(--border);background:#0b0c10;color:var(--text);
+           border-radius:12px;padding:12px;font-family:ui-monospace,Consolas,Menlo,monospace}
+  .row{display:flex;gap:12px;flex-wrap:wrap}
+  .row > *{flex:1 1 320px}
+  .opts{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:10px 0 4px}
+  button{padding:10px 14px;border-radius:12px;border:1px solid var(--border);background:var(--accent);
+         color:#002b36;font-weight:700;cursor:pointer}
+  button.secondary{background:transparent;color:var(--text)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px}
+  .pill{background:#0b0c10;border:1px solid var(--border);border-radius:20px;padding:6px 10px}
+  a{color:var(--accent)}
+  footer{color:var(--muted);margin:10px 0}
+</style>
+</head>
+<body>
+<header>
+  <!-- Minimal logo V? -->
+  <svg viewBox="0 0 100 100" class="logo" aria-hidden="true">
+    <rect width="100" height="100" rx="18" fill="#111318"/>
+    <path d="M22 20 L40 20 L55 80 L45 80 Z" fill="#e5e7eb"/>
+    <path d="M68 30c9 0 16 7 16 16 0 10-10 14-14 16-2 1-3 2-3 4v4h-10v-5c0-9 10-11 14-14 3-2 4-4 4-6 0-4-3-6-7-6-5 0-8 3-9 7h-9c1-10 9-16 18-16z" fill="#e5e7eb"/>
+    <circle cx="71" cy="84" r="5" fill="#e5e7eb"/>
+  </svg>
+  <div>
+    <h1>Clave V — Decodificador / Codificador</h1>
+    <div class="muted">Cifrado por posición de teclado iPhone (ES). Funciona offline como PWA.</div>
+  </div>
+</header>
+
+<div class="card">
+  <h2 style="margin-top:0">Decodificar (símbolos → texto)</h2>
+  <div class="opts">
+    <strong>Ambigüedades:</strong>
+    <label><input type="radio" name="ambig" value="preferZ_M" checked> Z/M</label>
+    <label><input type="radio" name="ambig" value="preferX_N"> X/N</label>
+    <label><input type="radio" name="ambig" value="brackets"> Mostrar ambas</label>
+  </div>
+  <div class="row">
+    <textarea id="cipher" placeholder="Pega tu mensaje en Clave V (ej.: 09@@9 0759)"></textarea>
+    <textarea id="plain" placeholder="Salida en español" readonly></textarea>
+  </div>
+  <div class="opts">
+    <button id="btnDecode">Decodificar</button>
+    <button id="btnSwap" class="secondary">↔︎ Intercambiar</button>
+  </div>
+</div>
+
+<div class="card">
+  <h2 style="margin-top:0">Codificar (texto → símbolos)</h2>
+  <div class="row">
+    <textarea id="plainIn" placeholder="Escribe el texto en español (letras y Ñ)"></textarea>
+    <textarea id="cipherOut" placeholder="Salida en Clave V" readonly></textarea>
+  </div>
+  <div class="opts">
+    <button id="btnEncode">Codificar</button>
+    <span class="muted">Por defecto usa ’ para N/M y . para Z/X.</span>
+  </div>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0">Mapa de Clave V</h3>
+  <div class="grid">
+    <div class="pill">Q→1</div><div class="pill">W→2</div><div class="pill">E→3</div><div class="pill">R→4</div><div class="pill">T→5</div>
+    <div class="pill">Y→6</div><div class="pill">U→7</div><div class="pill">I→8</div><div class="pill">O→9</div><div class="pill">P→0</div>
+    <div class="pill">A→-</div><div class="pill">S→/</div><div class="pill">D→:</div><div class="pill">F→;</div><div class="pill">G→(</div>
+    <div class="pill">H→)</div><div class="pill">J→$</div><div class="pill">K→&</div><div class="pill">L→@</div><div class="pill">Ñ→"</div>
+    <div class="pill">Z/X→.</div><div class="pill">C→,</div><div class="pill">V→?</div><div class="pill">B→!</div><div class="pill">N/M→’</div>
+  </div>
+</div>
+
+<footer>Hecho para <strong>Clave V</strong>. Funciona offline en iPhone desde “Agregar a pantalla de inicio”.</footer>
+
+<script>
+const decodeMap = {'1':'Q','2':'W','3':'E','4':'R','5':'T','6':'Y','7':'U','8':'I','9':'O','0':'P','-':'A','/':'S',':':'D',';':'F','(':'G',')':'H','$':'J','&':'K','@':'L','"':'Ñ',',':'C','?':'V','!':'B'};
+const amb = {'.':['Z','X'],'’':['N','M'],"'":['N','M']};
+const enc = {'Q':'1','W':'2','E':'3','R':'4','T':'5','Y':'6','U':'7','I':'8','O':'9','P':'0','A':'-','S':'/','D':':','F':' ;'.split()[0],'G':'(','H':')','J':'$','K':'&','L':'@','Ñ':'"','Z':'.','X':'.','C':',','V':'?','B':'!','N':'’','M':'’'};
+
+function decode(text,mode='preferZ_M'){
+  const out=[];
+  for(const ch of text){
+    if(/[ \n\t]/.test(ch)){out.push(ch);continue;}
+    if(decodeMap[ch]){out.push(decodeMap[ch]);continue;}
+    if(amb[ch]){
+      const [a,b]=amb[ch];
+      if(mode==='preferZ_M') out.push(a==='Z'?'Z':'M');
+      else if(mode==='preferX_N') out.push(b==='X'?'X':'N');
+      else out.push('{'+a+'|'+b+'}');
+      continue;
+    }
+    out.push(ch);
+  }
+  return out.join('');
+}
+function encode(text){
+  const out=[];
+  for(const raw of text){
+    const ch=raw.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase();
+    if(/[ \n\t]/.test(raw)){out.push(raw);continue;}
+    out.push(enc[ch]??raw);
+  }
+  return out.join('');
+}
+const $=s=>document.querySelector(s);
+$('#btnDecode').addEventListener('click',()=>{
+  const mode=document.querySelector('input[name="ambig"]:checked').value;
+  $('#plain').value=decode($('#cipher').value,mode);
+});
+$('#btnEncode').addEventListener('click',()=>$('#cipherOut').value=encode($('#plainIn').value));
+$('#btnSwap').addEventListener('click',()=>{const t=$('#cipher').value;$('#cipher').value=$('#plain').value;$('#plain').value=t;});
+if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(console.error));}
+</script>
+</body>
+</html>
